@@ -65,36 +65,51 @@ app.controller('MainCtrl', ['$scope', '$auth', '$http', '$location',
 app.controller('AuthCtrl', ['$scope', '$auth', '$location',
   function ($scope, $auth, $location) {
     // if $scope.currentUser, redirect to '/profile'
-
+    if ($scope.currentUser) {
+      $location.path('/');
+    }
     // clear sign up / login forms
+    $scope.user = {};
 
     $scope.signup = function() {
       // signup (https://github.com/sahat/satellizer#authsignupuser-options)
-
-        // set token (https://github.com/sahat/satellizer#authsettokentoken)
-
-        // call $scope.isAuthenticated to set $scope.currentUser
-
-        // clear sign up form
-
-        // redirect to '/profile'
+      $auth.signup($scope.user)
+        .then(function (response) {
+          // set token (https://github.com/sahat/satellizer#authsettokentoken)
+          $auth.setToken(response.data.token);
+          // call $scope.isAuthenticated to set $scope.currentUser
+          $scope.isAuthenticated();
+          // clear sign up form
+          $scope.user = {};
+          // redirect to '/profile'
+          $location.path('/profile');
+        }, function (error) {
+          console.log(error.message);
+        });
     };
+
 
     $scope.login = function() {
       // login (https://github.com/sahat/satellizer#authloginuser-options)
-
+      $auth.login($scope.user)
         // set token (https://github.com/sahat/satellizer#authsettokentoken)
-
+        .then(function (response) {
         // call $scope.isAuthenticated to set $scope.currentUser
-
-        // clear sign up form
-
-        // redirect to '/profile'
+        $scope.isAuthenticated();
+          // clear sign up form
+          $scope.user = {};
+          // redirect to '/profile'
+          $location.path('/profile');
+        }, function (error) {
+          console.error(error);
+        });
     };
   }]
 );
 
 app.controller('ProfileCtrl', ['$scope', '$http', '$location',
 	function ($scope, $http, $location) {
-    // if user is not logged in, redirect to '/login'
+    if(!$scope.currentUser) {
+      $location.path('/login');
+    }
 }]);
