@@ -1,4 +1,4 @@
-var app = angular.module('authSampleApp', ['ngRoute']);
+var app = angular.module('authSampleApp', ['ngRoute', 'satellizer']);
 
 app.config(['$routeProvider', '$locationProvider',
   function ($routeProvider, $locationProvider) {
@@ -32,23 +32,32 @@ app.config(['$routeProvider', '$locationProvider',
 app.controller('MainCtrl', ['$scope', '$auth', '$http', '$location',
 	function ($scope, $auth, $http, $location) {
     $scope.isAuthenticated = function() {
-      // send GET request to '/api/me'
-
-        // if response.data comes back, set $scope.currentUser = response.data
-
-        // otherwise remove token (https://github.com/sahat/satellizer#authremovetoken)
+      $http.get('api/me')
+        .then(function(response) {
+          if (response.data) {
+            $scope.currentUser = response.data;
+          } else {
+            $auth.removeToken();
+          }
+        }, function (error) {
+          console.log(error);
+          $auth.removeToken();
+        });
     };
 
     $scope.isAuthenticated();
 
     $scope.logout = function() {
       // logout (https://github.com/sahat/satellizer#authlogout)
-
-        // remove token (https://github.com/sahat/satellizer#authremovetoken)
-
-        // set $scope.currentUser = null
-
-        // redirect to '/login'
+      $auth.logout()
+        .then(function() {
+          // remove token (https://github.com/sahat/satellizer#authremovetoken)
+          $auth.removeToken();
+          // set $scope.currentUser = null
+          $scope.currentUser = null;
+          // redirect to '/login'
+          $location.path('/');
+        });
     };
   }]
 );
